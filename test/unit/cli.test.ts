@@ -3,7 +3,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { describe, it } from "node:test";
-import { runGrepai, formatCommandResult } from "../../src/grepai/cli.ts";
+import { runGrepai, formatCommandResult, type GrepaiRunResult } from "../../src/grepai/cli.ts";
 
 function installMockGrepai(body: string): { cwd: string; restore: () => void } {
 	const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "pi-grepai-cli-"));
@@ -53,35 +53,35 @@ void describe("runGrepai", () => {
 
 void describe("formatCommandResult", () => {
 	it("formats basic output", () => {
-		const result = { command: "grepai", args: ["status"], cwd: "/cwd", stdout: "output", stderr: "", code: 0, killed: false };
+		const result: GrepaiRunResult = { command: "grepai", args: ["status"], cwd: "/cwd", stdout: "output", stderr: "", code: 0, killed: false };
 		const formatted = formatCommandResult(result);
 		assert.ok(formatted.includes("$ grepai status"));
 		assert.ok(formatted.includes("output"));
 	});
 	it("includes stderr when present", () => {
-		const result = { command: "grepai", args: ["status"], cwd: "/cwd", stdout: "", stderr: "error message", code: 1, killed: false };
+		const result: GrepaiRunResult = { command: "grepai", args: ["status"], cwd: "/cwd", stdout: "", stderr: "error message", code: 1, killed: false };
 		const formatted = formatCommandResult(result);
 		assert.ok(formatted.includes("stderr:"));
 		assert.ok(formatted.includes("error message"));
 	});
 	it("formats nonzero exit code", () => {
-		const result = { command: "grepai", args: ["status"], cwd: "/cwd", stdout: "", stderr: "", code: 7, killed: false };
+		const result: GrepaiRunResult = { command: "grepai", args: ["status"], cwd: "/cwd", stdout: "", stderr: "", code: 7, killed: false };
 		const formatted = formatCommandResult(result);
 		assert.ok(formatted.includes("exit: 7"));
 	});
 	it("formats timeout as killed", () => {
-		const result = { command: "grepai", args: ["status"], cwd: "/cwd", stdout: "", stderr: "", code: null, killed: true };
+		const result: GrepaiRunResult = { command: "grepai", args: ["status"], cwd: "/cwd", stdout: "", stderr: "", code: null, killed: true };
 		const formatted = formatCommandResult(result);
 		assert.ok(formatted.includes("exit:"));
 		assert.ok(formatted.includes("timeout"));
 	});
 	it("includes error explanation when stderr is empty but error exists", () => {
-		const result = { command: "grepai", args: ["status"], cwd: "/cwd", stdout: "", stderr: "", code: 1, killed: false, error: "ENOENT: no such file or directory" };
+		const result: GrepaiRunResult = { command: "grepai", args: ["status"], cwd: "/cwd", stdout: "", stderr: "", code: 1, killed: false, error: "ENOENT: no such file or directory" };
 		const formatted = formatCommandResult(result);
 		assert.ok(formatted.includes("ENOENT"), "should include error message");
 	});
 	it("formats missing binary error result", () => {
-		const result = { command: "grepai", args: ["status"], cwd: "/cwd", stdout: "", stderr: "", code: 1, killed: false, error: "ENOENT: no such file or directory 'grepai'" };
+		const result: GrepaiRunResult = { command: "grepai", args: ["status"], cwd: "/cwd", stdout: "", stderr: "", code: 1, killed: false, error: "ENOENT: no such file or directory 'grepai'" };
 		const formatted = formatCommandResult(result);
 		assert.ok(formatted.includes("$ grepai status"));
 		assert.ok(formatted.includes("error:"));
