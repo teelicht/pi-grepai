@@ -1,0 +1,1 @@
+{ "grepai": { "autoStart": true, "output": { "format": "json", "compact": true }, "commands": { "timeoutMs": 30000 } } }

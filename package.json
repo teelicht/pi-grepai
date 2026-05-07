@@ -1,0 +1,38 @@
+{
+  "name": "@teelicht/pi-grepai",
+  "version": "0.1.0",
+  "description": "Pi extension package that bridges an installed grepai CLI into Pi slash commands and LLM tools",
+  "author": "Thomas Lichtenecker",
+  "license": "MIT",
+  "type": "module",
+  "repository": { "type": "git", "url": "git+https://github.com/teelicht/pi-grepai.git" },
+  "homepage": "https://github.com/teelicht/pi-grepai#readme",
+  "bugs": { "url": "https://github.com/teelicht/pi-grepai/issues" },
+  "publishConfig": { "access": "public" },
+  "keywords": ["pi-package", "pi", "pi-coding-agent", "grepai", "code-search", "cli"],
+  "files": ["src/", "docs/", "default-config.json", "config.example.json", "README.md", "LICENSE"],
+  "scripts": {
+    "prepublishOnly": "npm test",
+    "qa": "biome check --write && tsc --noEmit && npm run test:all",
+    "lint": "biome check --write",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run test:unit",
+    "test:unit": "node --experimental-strip-types --test test/unit/*.test.ts",
+    "test:integration": "node --experimental-transform-types --test test/integration/*.test.ts",
+    "test:all": "npm run test:unit && npm run test:integration"
+  },
+  "pi": { "extensions": ["./src/extension/index.ts"] },
+  "peerDependencies": {
+    "@mariozechner/pi-agent-core": "*",
+    "@mariozechner/pi-coding-agent": "*",
+    "typebox": "*"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.13",
+    "@mariozechner/pi-agent-core": "^0.73.0",
+    "@mariozechner/pi-coding-agent": "^0.73.0",
+    "@types/node": "^25.6.0",
+    "typebox": "^1.1.24",
+    "typescript": "^6.0.3"
+  }
+}
