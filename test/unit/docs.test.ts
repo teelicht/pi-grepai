@@ -4,7 +4,8 @@ import { describe, it } from "node:test";
 
 void describe("docs", () => {
 	it("documents commands, tools, config, non-goals, and release steps", () => {
-		for (const file of ["README.md", "docs/configuration.md", "docs/commands.md", "docs/tools.md", "docs/releases.md"]) assert.equal(fs.existsSync(file), true, `${file} should exist`);
+		for (const file of ["README.md", "docs/configuration.md", "docs/commands.md", "docs/tools.md", "docs/releases.md"])
+			assert.equal(fs.existsSync(file), true, `${file} should exist`);
 		const readme = fs.readFileSync("README.md", "utf-8");
 		assert.match(readme, /does not install grepai/i);
 		assert.match(readme, /grepai init/i);
@@ -16,15 +17,17 @@ void describe("docs", () => {
 		const quickStart = readme.match(/## Quick start\n([\s\S]*?)(?=\n## |\n#|$)/)?.[1] ?? "";
 		// Should not say "run grepai init then /grepai-init" as separate steps
 		assert.ok(
-			!/run `grepai init`.*then.*\/grepai-init/s.test(quickStart) &&
-			!/first.*`grepai init`.*\/grepai-init/s.test(quickStart),
-			"README should not suggest running both commands sequentially"
+			!/run `grepai init`.*then.*\/grepai-init/s.test(quickStart) && !/first.*`grepai init`.*\/grepai-init/s.test(quickStart),
+			"README should not suggest running both commands sequentially",
 		);
 	});
 
-	it("README quick start mentions /grepai-init runs grepai init", () => {
+	it("README documents manual grepai init and does not mention /grepai-init", () => {
 		const readme = fs.readFileSync("README.md", "utf-8");
-		assert.match(readme, /\/grepai-init.*runs.*grepai init/i);
+		assert.match(readme, /grepai init/i);
+		assert.doesNotMatch(readme, /\/grepai-init/i);
+		assert.doesNotMatch(fs.readFileSync("docs/commands.md", "utf-8"), /\/grepai-init/i);
+		assert.doesNotMatch(fs.readFileSync("docs/tools.md", "utf-8"), /\/grepai-init/i);
 	});
 
 	it("configuration.md notes output config fields are v1 parsed but not dynamically applied by current tools", () => {

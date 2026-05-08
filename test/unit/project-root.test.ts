@@ -5,12 +5,16 @@ import * as path from "node:path";
 import { describe, it } from "node:test";
 import { isGrepaiInitialized, resolveProjectRoot } from "../../src/grepai/project-root.ts";
 
-function tempProject(): string { return fs.mkdtempSync(path.join(os.tmpdir(), "pi-grepai-project-")); }
+function tempProject(): string {
+	return fs.mkdtempSync(path.join(os.tmpdir(), "pi-grepai-project-"));
+}
 
 function rmrf(dir: string): void {
 	try {
 		fs.rmSync(dir, { recursive: true, force: true });
-	} catch { /* ignore */ }
+	} catch {
+		/* ignore */
+	}
 }
 
 void describe("project root", () => {

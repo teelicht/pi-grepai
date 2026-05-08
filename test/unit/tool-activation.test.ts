@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { GREPAI_TOOL_NAMES } from "../../src/grepai/tools.ts";
 import { nextActiveTools } from "../../src/grepai/tool-activation.ts";
+import { GREPAI_TOOL_NAMES } from "../../src/grepai/tools.ts";
 
 void describe("tool activation", () => {
 	it("adds grepai tools while preserving active builtins", () => {

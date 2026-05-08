@@ -1,8 +1,21 @@
 /** Thin grepai CLI execution wrapper. */
-import { execFile, type ExecFileException } from "node:child_process";
+import { type ExecFileException, execFile } from "node:child_process";
 
-export interface GrepaiRunOptions { cwd: string; timeoutMs: number; signal?: AbortSignal }
-export interface GrepaiRunResult { command: "grepai"; args: string[]; cwd: string; stdout: string; stderr: string; code: number | null; killed: boolean; error?: string }
+export interface GrepaiRunOptions {
+	cwd: string;
+	timeoutMs: number;
+	signal?: AbortSignal;
+}
+export interface GrepaiRunResult {
+	command: "grepai";
+	args: string[];
+	cwd: string;
+	stdout: string;
+	stderr: string;
+	code: number | null;
+	killed: boolean;
+	error?: string;
+}
 
 export function runGrepai(args: string[], options: GrepaiRunOptions): Promise<GrepaiRunResult> {
 	return new Promise((resolve) => {
@@ -15,7 +28,7 @@ export function runGrepai(args: string[], options: GrepaiRunOptions): Promise<Gr
 				stderr,
 				code: error ? (typeof error.code === "number" ? error.code : 1) : 0,
 				killed: Boolean(error?.killed),
-				error: error?.message
+				error: error?.message,
 			});
 		});
 	});

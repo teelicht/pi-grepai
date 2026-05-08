@@ -1,10 +1,22 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { GREPAI_TOOL_NAMES, buildGrepaiArgs } from "../../src/grepai/tools.ts";
+import { buildGrepaiArgs, GREPAI_TOOL_NAMES } from "../../src/grepai/tools.ts";
 
 void describe("grepai tools", () => {
 	it("declares the v1 tool surface", () => {
-		assert.deepEqual(GREPAI_TOOL_NAMES, ["grepai_search", "grepai_trace_callers", "grepai_trace_callees", "grepai_trace_graph", "grepai_refs_readers", "grepai_refs_writers", "grepai_refs_graph", "grepai_index_status", "grepai_rpg_search", "grepai_rpg_fetch", "grepai_rpg_explore"]);
+		assert.deepEqual(GREPAI_TOOL_NAMES, [
+			"grepai_search",
+			"grepai_trace_callers",
+			"grepai_trace_callees",
+			"grepai_trace_graph",
+			"grepai_refs_readers",
+			"grepai_refs_writers",
+			"grepai_refs_graph",
+			"grepai_index_status",
+			"grepai_rpg_search",
+			"grepai_rpg_fetch",
+			"grepai_rpg_explore",
+		]);
 	});
 	it("maps search to structured compact args", () => {
 		assert.deepEqual(buildGrepaiArgs("grepai_search", { query: "router" }), ["search", "router", "--json", "--compact"]);

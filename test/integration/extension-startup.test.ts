@@ -51,7 +51,7 @@ void describe("extension startup", () => {
 			const runtime = mockPi();
 			registerExtension(runtime.pi as any);
 			assert.ok(runtime.tools.includes("grepai_search"));
-			assert.deepEqual(runtime.registeredCommands.sort(), ["grepai-init", "grepai-status", "grepai-stop", "grepai-watch"]);
+			assert.deepEqual(runtime.registeredCommands.sort(), ["grepai-status", "grepai-stop", "grepai-watch"]);
 			await runtime.handlers.get("session_start")?.({}, { cwd, ui: { setStatus() {}, notify() {} } });
 			assert.deepEqual(runtime.active, ["read"]);
 		} finally {

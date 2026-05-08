@@ -33,12 +33,7 @@ export default function registerPiGrepai(pi: ExtensionAPI): void {
 	async function refresh(ctx: { cwd: string; ui: Pick<ExtensionContext["ui"], "setStatus"> }): Promise<void> {
 		const projectRoot = await resolveProjectRoot(ctx.cwd);
 		const initialized = isGrepaiInitialized(projectRoot);
-		pi.setActiveTools(
-			nextActiveTools(
-				pi.getActiveTools(),
-				initialized,
-			),
-		);
+		pi.setActiveTools(nextActiveTools(pi.getActiveTools(), initialized));
 		let watcher: "not_initialized" | "running" | "unknown" | "error" = initialized ? "unknown" : "not_initialized";
 		if (initialized && configStore.getConfig().grepai.autoStart) {
 			const status = await runGrepai(["watch", "--status"], { cwd: projectRoot, timeoutMs: configStore.getConfig().grepai.commands.timeoutMs });

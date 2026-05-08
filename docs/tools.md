@@ -24,4 +24,4 @@ The extension registers the following tools for use by the LLM:
 
 ## Activation
 
-Tools are activated automatically on session start if the project is detected as initialized (`.grepai/config.yaml` exists). If not initialized, tools remain registered but inactive until `/grepai-init` is run.
+Tools are activated automatically on session start if the project is detected as initialized (`.grepai/config.yaml` exists). If not initialized, tools remain registered but inactive until you run `grepai init` manually in the project root and start or reload the Pi session.
