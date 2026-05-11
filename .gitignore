@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+
+# Git Worktrees
+.worktrees/
+
+# Node and package managers
+node_modules/
+
+# Planning
+/docs/todos.md
+
+.scratch/
+
+package-lock.json
+
+# old specs and plans
+.archive/
+
+# grepai
+.grepai/
