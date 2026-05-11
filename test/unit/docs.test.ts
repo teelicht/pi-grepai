@@ -9,7 +9,10 @@ void describe("docs", () => {
 		const readme = fs.readFileSync("README.md", "utf-8");
 		assert.match(readme, /does not install grepai/i);
 		assert.match(readme, /grepai init/i);
-		assert.match(fs.readFileSync("docs/tools.md", "utf-8"), /grepai_search/);
+		const toolsDoc = fs.readFileSync("docs/tools.md", "utf-8");
+		assert.match(toolsDoc, /grepai_search/);
+		assert.match(toolsDoc, /Semantic code search by intent; returns ranked file\/line matches/);
+		assert.match(toolsDoc, /Prefer `grepai_search` for semantic discovery/);
 	});
 
 	it("README quick start does not suggest running both grepai init and /grepai-init", () => {

@@ -26,4 +26,26 @@ void describe("createGrepaiTools", () => {
 			assert.ok(typeof tool.execute === "function", `Missing execute on ${tool.name}`);
 		}
 	});
+	it("uses concise per-tool descriptions and shared grepai guidance", () => {
+		const tools = createGrepaiTools(() => ({ grepai: { commands: { timeoutMs: 5000 }, search: { maxResults: 10 } } }) as unknown as GrepaiConfig);
+		const expectedDescriptions = new Map([
+			["grepai_search", "Semantic code search by intent; returns ranked file/line matches."],
+			["grepai_trace_callers", "Find functions that call a symbol."],
+			["grepai_trace_callees", "Find functions called by a symbol."],
+			["grepai_trace_graph", "Build a call graph around a symbol."],
+			["grepai_refs_readers", "Find code that reads a property, field, or state key."],
+			["grepai_refs_writers", "Find code that writes or mutates a property, field, or state key."],
+			["grepai_refs_graph", "Show readers and writers for a property/state symbol."],
+			["grepai_index_status", "Check GrepAI index and watcher health."],
+			["grepai_rpg_search", "Search Repository Purpose Graph feature nodes."],
+			["grepai_rpg_fetch", "Fetch context for a specific RPG node."],
+			["grepai_rpg_explore", "Traverse nearby RPG nodes by direction/depth."],
+		]);
+		const sharedGuidance =
+			"Runs the matching grepai CLI command in the current project and returns raw stdout/stderr. Prefer grepai_search for semantic discovery, trace_* for call flow, refs_* for data-flow/property usage, and index_status when results look stale or unavailable.";
+		for (const tool of tools) {
+			assert.equal(tool.description, expectedDescriptions.get(tool.name));
+			assert.equal(tool.promptSnippet, `${expectedDescriptions.get(tool.name)}\n\n${sharedGuidance}`);
+		}
+	});
 });

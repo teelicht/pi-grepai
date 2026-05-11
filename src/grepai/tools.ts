@@ -54,15 +54,33 @@ const Params = Type.Object({ query: Type.Optional(Type.String()), symbol: Type.O
 function toolLabel(name: string): string {
 	return name.replaceAll("_", " ");
 }
+
+const TOOL_DESCRIPTIONS: Record<GrepaiToolName, string> = {
+	grepai_search: "Semantic code search by intent; returns ranked file/line matches.",
+	grepai_trace_callers: "Find functions that call a symbol.",
+	grepai_trace_callees: "Find functions called by a symbol.",
+	grepai_trace_graph: "Build a call graph around a symbol.",
+	grepai_refs_readers: "Find code that reads a property, field, or state key.",
+	grepai_refs_writers: "Find code that writes or mutates a property, field, or state key.",
+	grepai_refs_graph: "Show readers and writers for a property/state symbol.",
+	grepai_index_status: "Check GrepAI index and watcher health.",
+	grepai_rpg_search: "Search Repository Purpose Graph feature nodes.",
+	grepai_rpg_fetch: "Fetch context for a specific RPG node.",
+	grepai_rpg_explore: "Traverse nearby RPG nodes by direction/depth.",
+};
+
+const SHARED_PROMPT_GUIDANCE =
+	"Runs the matching grepai CLI command in the current project and returns raw stdout/stderr. Prefer grepai_search for semantic discovery, trace_* for call flow, refs_* for data-flow/property usage, and index_status when results look stale or unavailable.";
+
 function promptFor(name: GrepaiToolName): string {
-	return `${name} runs the matching grepai CLI command in the current project and returns raw stdout/stderr without schema normalization.`;
+	return `${TOOL_DESCRIPTIONS[name]}\n\n${SHARED_PROMPT_GUIDANCE}`;
 }
 
 export function createGrepaiTools(getConfig: () => GrepaiConfig): ToolDefinition<typeof Params, Record<string, unknown>>[] {
 	return GREPAI_TOOL_NAMES.map((name) => ({
 		name,
 		label: toolLabel(name),
-		description: promptFor(name),
+		description: TOOL_DESCRIPTIONS[name],
 		promptSnippet: promptFor(name),
 		parameters: Params,
 		async execute(_toolCallId, params, signal, _onUpdate, ctx: ExtensionContext): Promise<AgentToolResult<Record<string, unknown>>> {
