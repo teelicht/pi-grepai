@@ -45,15 +45,18 @@ void describe("docs", () => {
 		assert.match(config, /does not dynamically apply|not dynamically applied|current.*tools.*do not apply|tools.*do not dynamically/i);
 	});
 
-	it("documents npmjs.com publishing automation", () => {
+	it("documents npmjs.com trusted publishing automation", () => {
 		const packageJson = JSON.parse(fs.readFileSync("package.json", "utf-8"));
 		assert.equal(packageJson.publishConfig.access, "public");
 		assert.equal(packageJson.publishConfig.registry, undefined);
 		assert.equal(fs.existsSync(".npmrc"), false);
 		const releases = fs.readFileSync("docs/releases.md", "utf-8");
 		assert.match(releases, /npmjs\.com/);
-		assert.match(releases, /NPM_TOKEN/);
-		assert.match(releases, /npm publish --access public --provenance/);
+		assert.match(releases, /trusted publishing/i);
+		assert.match(releases, /Workflow filename: `release\.yml`/);
+		assert.match(releases, /id-token: write/);
+		assert.match(releases, /npm publish --access public/);
+		assert.doesNotMatch(releases, /NPM_TOKEN secret/);
 		assert.doesNotMatch(releases, /GitHub Packages/);
 	});
 });

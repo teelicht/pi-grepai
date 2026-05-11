@@ -5,8 +5,13 @@ This document describes the steps to release `@teelicht/pi-grepai` to the public
 ## Prerequisites
 
 1. Ensure the GitHub repository exists at `github.com/teelicht/pi-grepai`.
-2. Ensure you have publish access to the public npm package `@teelicht/pi-grepai` on npmjs.com.
-3. Add an npm automation token as the repository secret `NPM_TOKEN`.
+2. Ensure the public npm package `@teelicht/pi-grepai` exists on npmjs.com and you have publish access.
+3. Configure npm trusted publishing for this package:
+   - Publisher: GitHub Actions
+   - GitHub organization/user: `teelicht`
+   - GitHub repository: `pi-grepai`
+   - Workflow filename: `release.yml`
+   - Environment name: leave blank unless the workflow is changed to use a GitHub deployment environment
 4. Ensure `package.json` keeps `publishConfig.access` set to `public` and does not set a custom registry.
 
 ## Release Steps
@@ -32,8 +37,6 @@ Fix any failures before proceeding.
 
 Update `package.json`, `package-lock.json`, and `CHANGELOG.md` for the release version.
 
-For the first release, the package version and changelog entry are `0.0.1` / `v0.0.1`.
-
 For later releases, use semantic versioning:
 
 ```bash
@@ -54,8 +57,8 @@ Commit the release changes and create an annotated tag:
 
 ```bash
 git add package.json package-lock.json CHANGELOG.md docs/releases.md
-git commit -m "chore: prepare v0.0.1 release"
-git tag -a v0.0.1 -m "v0.0.1"
+git commit -m "chore: prepare v0.0.2 release"
+git tag -a v0.0.2 -m "v0.0.2"
 ```
 
 ### 4. Push the Release
@@ -64,7 +67,7 @@ Push the commit and tag:
 
 ```bash
 git push origin main
-git push origin v0.0.1
+git push origin v0.0.2
 ```
 
 Pushing the tag triggers `.github/workflows/release.yml`.
@@ -75,15 +78,18 @@ The release workflow:
 
 1. Checks out the repository.
 2. Installs dependencies with `npm ci`.
-3. Runs `npm run qa`.
-4. Publishes to npmjs.com with:
+3. Verifies the pushed tag matches `package.json`.
+4. Extracts the matching `CHANGELOG.md` section.
+5. Runs `npm run qa`.
+6. Publishes to npmjs.com with trusted publishing:
 
 ```bash
-npm publish --access public --provenance
+npm publish --access public
 ```
 
-5. Extracts the matching `CHANGELOG.md` section.
-6. Creates a GitHub Release for the pushed tag.
+7. Creates a GitHub Release for the pushed tag using the extracted changelog notes.
+
+Trusted publishing uses GitHub Actions OIDC via `id-token: write`, so the workflow does not require an `NPM_TOKEN` secret. npm automatically generates provenance for public packages published from public repositories through trusted publishing.
 
 ### 6. Verify Installation
 
