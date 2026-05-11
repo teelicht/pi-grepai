@@ -21,7 +21,7 @@ This package does not install grepai, does not install official grepai skills an
 ## Install
 
 1. Install and configure grepai from the official [grepai docs](https://yoanbernabeu.github.io/grepai/getting-started/).
-2. Install this Pi package with `pi install npm:@teelicht/pi-grepai` or `pi install /path/to/pi-grepai` during local development.
+2. Install this Pi package from npm with `pi install npm:@teelicht/pi-grepai`, or use `pi install /path/to/pi-grepai` during local development.
 3. Optionally, install all or selected grepai skills
 4. Run `grepai init` in the project root.
 

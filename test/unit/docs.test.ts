@@ -9,6 +9,8 @@ void describe("docs", () => {
 		const readme = fs.readFileSync("README.md", "utf-8");
 		assert.match(readme, /does not install grepai/i);
 		assert.match(readme, /grepai init/i);
+		assert.match(readme, /pi install npm:@teelicht\/pi-grepai/);
+		assert.doesNotMatch(readme, /npm\.pkg\.github\.com/);
 		const toolsDoc = fs.readFileSync("docs/tools.md", "utf-8");
 		assert.match(toolsDoc, /grepai_search/);
 		assert.match(toolsDoc, /Semantic code search by intent; returns ranked file\/line matches/);
@@ -41,5 +43,17 @@ void describe("docs", () => {
 		assert.match(config, /grepai\.output\.compact/);
 		// Check there's a note about current tools not dynamically applying these
 		assert.match(config, /does not dynamically apply|not dynamically applied|current.*tools.*do not apply|tools.*do not dynamically/i);
+	});
+
+	it("documents npmjs.com publishing automation", () => {
+		const packageJson = JSON.parse(fs.readFileSync("package.json", "utf-8"));
+		assert.equal(packageJson.publishConfig.access, "public");
+		assert.equal(packageJson.publishConfig.registry, undefined);
+		assert.equal(fs.existsSync(".npmrc"), false);
+		const releases = fs.readFileSync("docs/releases.md", "utf-8");
+		assert.match(releases, /npmjs\.com/);
+		assert.match(releases, /NPM_TOKEN/);
+		assert.match(releases, /npm publish --access public --provenance/);
+		assert.doesNotMatch(releases, /GitHub Packages/);
 	});
 });

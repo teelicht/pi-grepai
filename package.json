@@ -1,6 +1,6 @@
 {
   "name": "@teelicht/pi-grepai",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Pi extension package that bridges an installed grepai CLI into Pi slash commands and LLM tools",
   "author": "Thomas Lichtenecker",
   "license": "MIT",
@@ -10,7 +10,18 @@
   "bugs": { "url": "https://github.com/teelicht/pi-grepai/issues" },
   "publishConfig": { "access": "public" },
   "keywords": ["pi-package", "pi", "pi-coding-agent", "grepai", "code-search", "cli"],
-  "files": ["src/", "docs/", "default-config.json", "config.example.json", "README.md", "LICENSE"],
+  "files": [
+    "src/",
+    "docs/commands.md",
+    "docs/configuration.md",
+    "docs/releases.md",
+    "docs/tools.md",
+    "default-config.json",
+    "config.example.json",
+    "CHANGELOG.md",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "prepublishOnly": "npm test",
     "qa": "biome check --write && tsc --noEmit && npm run test:all",
