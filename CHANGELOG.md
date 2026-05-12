@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.0.2 - 2026-05-11
+## v0.1.0 - 2026-05-11
 
 - Update Pi dependencies to @earendil-works/* v0.74.0
 - Adds per-tool schemas for GrepAI LLM tools so required parameters are clearer to models.

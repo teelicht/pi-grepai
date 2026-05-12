@@ -1,6 +1,6 @@
 {
   "name": "@teelicht/pi-grepai",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Pi extension package that bridges an installed grepai CLI into Pi slash commands and LLM tools",
   "author": "Thomas Lichtenecker",
   "license": "MIT",
