@@ -17,3 +17,7 @@ node_modules/
 
 # grepai
 .grepai/
+
+# agent config
+.agents/
+skills-lock.json
