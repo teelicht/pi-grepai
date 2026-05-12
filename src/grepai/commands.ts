@@ -1,5 +1,5 @@
 /** Slash command planning and execution helpers. */
-import type { ExtensionAPI, ExtensionCommandContext } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
 import type { GrepaiConfig } from "../extension/config-store.ts";
 import { type GrepaiStatusState, renderStatusDetail } from "../ui/status.ts";
 import { formatCommandResult, runGrepai } from "./cli.ts";

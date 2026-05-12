@@ -1,6 +1,6 @@
 /** LLM-facing grepai tool definitions and command mappings. */
-import type { AgentToolResult } from "@mariozechner/pi-agent-core";
-import type { ExtensionContext, ToolDefinition } from "@mariozechner/pi-coding-agent";
+import type { AgentToolResult } from "@earendil-works/pi-agent-core";
+import type { ExtensionContext, ToolDefinition } from "@earendil-works/pi-coding-agent";
 import { type TSchema, Type } from "typebox";
 import type { GrepaiConfig } from "../extension/config-store.ts";
 import { formatCommandResult, runGrepai } from "./cli.ts";

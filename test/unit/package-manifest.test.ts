@@ -6,7 +6,7 @@ void describe("package manifest", () => {
 	it("declares the Pi package entrypoint and MIT metadata", () => {
 		const manifest = JSON.parse(fs.readFileSync("package.json", "utf-8"));
 		assert.equal(manifest.name, "@teelicht/pi-grepai");
-		assert.equal(manifest.version, "0.0.1");
+		assert.equal(manifest.version, "0.1.0");
 		assert.equal(manifest.type, "module");
 		assert.equal(manifest.license, "MIT");
 		assert.deepEqual(manifest.pi.extensions, ["./src/extension/index.ts"]);

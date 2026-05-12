@@ -3,7 +3,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { runGrepai } from "../grepai/cli.ts";
 import { registerGrepaiCommands } from "../grepai/commands.ts";
 import { isGrepaiInitialized, resolveProjectRoot } from "../grepai/project-root.ts";
