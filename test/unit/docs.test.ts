@@ -13,8 +13,13 @@ void describe("docs", () => {
 		assert.doesNotMatch(readme, /npm\.pkg\.github\.com/);
 		const toolsDoc = fs.readFileSync("docs/tools.md", "utf-8");
 		assert.match(toolsDoc, /grepai_search/);
-		assert.match(toolsDoc, /Semantic code search by intent; returns ranked file\/line matches/);
-		assert.match(toolsDoc, /Prefer `grepai_search` for semantic discovery/);
+		assert.match(toolsDoc, /Required Params/);
+		assert.match(toolsDoc, /`grepai_refs_readers` \| `symbol`/);
+		assert.match(toolsDoc, /`grepai_rpg_explore` \| `id`/);
+		assert.match(toolsDoc, /stdout and stderr pass through directly/i);
+		assert.match(toolsDoc, /No schema normalization is performed/i);
+		assert.match(toolsDoc, /installed GrepAI skills/i);
+		assert.match(toolsDoc, /documented GrepAI MCP\/CLI tool surface/i);
 	});
 
 	it("README quick start does not suggest running both grepai init and /grepai-init", () => {
