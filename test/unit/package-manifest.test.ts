@@ -16,5 +16,6 @@ void describe("package manifest", () => {
 		assert.ok(manifest.files.includes("docs/tools.md"));
 		assert.ok(manifest.files.includes("CHANGELOG.md"));
 		assert.ok(!manifest.files.includes("docs/"), "package should not publish docs/superpowers planning artifacts");
+		assert.equal(manifest.scripts["test:integration"], "node --experimental-strip-types --test test/integration/*.test.ts");
 	});
 });

@@ -1,7 +1,7 @@
 /** LLM-facing grepai tool definitions and command mappings. */
 import type { AgentToolResult } from "@mariozechner/pi-agent-core";
 import type { ExtensionContext, ToolDefinition } from "@mariozechner/pi-coding-agent";
-import { Type, type TSchema } from "typebox";
+import { type TSchema, Type } from "typebox";
 import type { GrepaiConfig } from "../extension/config-store.ts";
 import { formatCommandResult, runGrepai } from "./cli.ts";
 import { resolveProjectRoot } from "./project-root.ts";
@@ -32,15 +32,7 @@ type RpgSearchParams = { query: string; limit?: number; format?: GrepaiFormat };
 type RpgFetchParams = { id: string; format?: GrepaiFormat };
 type RpgExploreParams = { id: string; direction?: "in" | "out" | "both"; depth?: number; format?: GrepaiFormat };
 
-export type GrepaiToolParams =
-	| SearchParams
-	| TraceParams
-	| TraceGraphParams
-	| RefsParams
-	| StatusParams
-	| RpgSearchParams
-	| RpgFetchParams
-	| RpgExploreParams;
+export type GrepaiToolParams = SearchParams | TraceParams | TraceGraphParams | RefsParams | StatusParams | RpgSearchParams | RpgFetchParams | RpgExploreParams;
 
 const Format = Type.Optional(
 	Type.Union([Type.Literal("json"), Type.Literal("toon"), Type.Literal("text")], {
