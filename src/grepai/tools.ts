@@ -1,7 +1,7 @@
 /** LLM-facing grepai tool definitions and command mappings. */
 import type { AgentToolResult } from "@mariozechner/pi-agent-core";
 import type { ExtensionContext, ToolDefinition } from "@mariozechner/pi-coding-agent";
-import { Type } from "typebox";
+import { Type, type TSchema } from "typebox";
 import type { GrepaiConfig } from "../extension/config-store.ts";
 import { formatCommandResult, runGrepai } from "./cli.ts";
 import { resolveProjectRoot } from "./project-root.ts";
@@ -20,72 +20,292 @@ export const GREPAI_TOOL_NAMES = [
 	"grepai_rpg_explore",
 ] as const;
 export type GrepaiToolName = (typeof GREPAI_TOOL_NAMES)[number];
-export type GrepaiToolParams = { query?: string; symbol?: string; id?: string; path?: string };
 
-export function buildGrepaiArgs(name: GrepaiToolName, params: GrepaiToolParams): string[] {
-	switch (name) {
-		case "grepai_search":
-			return ["search", params.query ?? "", "--json", "--compact"];
-		case "grepai_trace_callers":
-			return ["trace", "callers", params.symbol ?? ""];
-		case "grepai_trace_callees":
-			return ["trace", "callees", params.symbol ?? ""];
-		case "grepai_trace_graph":
-			return ["trace", "graph", params.symbol ?? ""];
-		case "grepai_refs_readers":
-			return ["refs", "readers", params.symbol ?? ""];
-		case "grepai_refs_writers":
-			return ["refs", "writers", params.symbol ?? ""];
-		case "grepai_refs_graph":
-			return ["refs", "graph", params.symbol ?? ""];
-		case "grepai_index_status":
-			return ["status", "--no-ui"];
-		case "grepai_rpg_search":
-			return ["rpg", "search", params.query ?? ""];
-		case "grepai_rpg_fetch":
-			return ["rpg", "fetch", params.id ?? params.path ?? ""];
-		case "grepai_rpg_explore":
-			return ["rpg", "explore", params.query ?? ""];
-	}
-}
+type GrepaiFormat = "json" | "toon" | "text";
 
-const Params = Type.Object({ query: Type.Optional(Type.String()), symbol: Type.Optional(Type.String()), id: Type.Optional(Type.String()), path: Type.Optional(Type.String()) });
+type SearchParams = { query: string; limit?: number; compact?: boolean; format?: GrepaiFormat };
+type TraceParams = { symbol: string; workspace?: string; project?: string; compact?: boolean; format?: GrepaiFormat };
+type TraceGraphParams = { symbol: string; workspace?: string; project?: string; depth?: number; format?: GrepaiFormat };
+type RefsParams = { symbol: string; workspace?: string; project?: string; format?: GrepaiFormat };
+type StatusParams = { verbose?: boolean; workspace?: string; format?: GrepaiFormat };
+type RpgSearchParams = { query: string; limit?: number; format?: GrepaiFormat };
+type RpgFetchParams = { id: string; format?: GrepaiFormat };
+type RpgExploreParams = { id: string; direction?: "in" | "out" | "both"; depth?: number; format?: GrepaiFormat };
+
+export type GrepaiToolParams =
+	| SearchParams
+	| TraceParams
+	| TraceGraphParams
+	| RefsParams
+	| StatusParams
+	| RpgSearchParams
+	| RpgFetchParams
+	| RpgExploreParams;
+
+const Format = Type.Optional(
+	Type.Union([Type.Literal("json"), Type.Literal("toon"), Type.Literal("text")], {
+		description: "Output format flag to pass to grepai: json, toon, or text/no flag.",
+	}),
+);
+
+const Direction = Type.Optional(
+	Type.Union([Type.Literal("in"), Type.Literal("out"), Type.Literal("both")], {
+		description: "RPG graph traversal direction.",
+	}),
+);
+
+const SearchParamsSchema = Type.Object({
+	query: Type.String({ description: "Natural-language semantic search query" }),
+	limit: Type.Optional(Type.Number({ description: "Maximum number of results" })),
+	compact: Type.Optional(Type.Boolean({ description: "Pass --compact for token-efficient output when supported" })),
+	format: Format,
+});
+
+const TraceParamsSchema = Type.Object({
+	symbol: Type.String({ description: "Function, method, or symbol name to trace" }),
+	workspace: Type.Optional(Type.String({ description: "Workspace name for cross-project trace" })),
+	project: Type.Optional(Type.String({ description: "Project name within the workspace" })),
+	compact: Type.Optional(Type.Boolean({ description: "Pass --compact for token-efficient output when supported" })),
+	format: Format,
+});
+
+const TraceGraphParamsSchema = Type.Object({
+	symbol: Type.String({ description: "Function, method, or symbol name for the call graph" }),
+	workspace: Type.Optional(Type.String({ description: "Workspace name for cross-project trace" })),
+	project: Type.Optional(Type.String({ description: "Project name within the workspace" })),
+	depth: Type.Optional(Type.Number({ description: "Maximum graph traversal depth" })),
+	format: Format,
+});
+
+const RefsParamsSchema = Type.Object({
+	symbol: Type.String({ description: "Property, field, or state key to inspect" }),
+	workspace: Type.Optional(Type.String({ description: "Workspace name for cross-project refs" })),
+	project: Type.Optional(Type.String({ description: "Project name within the workspace" })),
+	format: Format,
+});
+
+const StatusParamsSchema = Type.Object({
+	verbose: Type.Optional(Type.Boolean({ description: "Pass --verbose for more index details when supported" })),
+	workspace: Type.Optional(Type.String({ description: "Workspace name for status when supported by the installed CLI" })),
+	format: Format,
+});
+
+const RpgSearchParamsSchema = Type.Object({
+	query: Type.String({ description: "Semantic query for Repository Purpose Graph nodes" }),
+	limit: Type.Optional(Type.Number({ description: "Maximum number of RPG nodes" })),
+	format: Format,
+});
+
+const RpgFetchParamsSchema = Type.Object({
+	id: Type.String({ description: "Repository Purpose Graph node identifier" }),
+	format: Format,
+});
+
+const RpgExploreParamsSchema = Type.Object({
+	id: Type.String({ description: "Repository Purpose Graph node identifier" }),
+	direction: Direction,
+	depth: Type.Optional(Type.Number({ description: "Maximum graph traversal depth" })),
+	format: Format,
+});
+
+type GrepaiToolSpec<TParams extends Record<string, unknown> = Record<string, unknown>> = {
+	name: GrepaiToolName;
+	description: string;
+	promptSnippet: string;
+	parameters: TSchema;
+	buildArgs(params: TParams): string[];
+};
 
 function toolLabel(name: string): string {
 	return name.replaceAll("_", " ");
 }
 
-const TOOL_DESCRIPTIONS: Record<GrepaiToolName, string> = {
-	grepai_search: "Semantic code search by intent; returns ranked file/line matches.",
-	grepai_trace_callers: "Find functions that call a symbol.",
-	grepai_trace_callees: "Find functions called by a symbol.",
-	grepai_trace_graph: "Build a call graph around a symbol.",
-	grepai_refs_readers: "Find code that reads a property, field, or state key.",
-	grepai_refs_writers: "Find code that writes or mutates a property, field, or state key.",
-	grepai_refs_graph: "Show readers and writers for a property/state symbol.",
-	grepai_index_status: "Check GrepAI index and watcher health.",
-	grepai_rpg_search: "Search Repository Purpose Graph feature nodes.",
-	grepai_rpg_fetch: "Fetch context for a specific RPG node.",
-	grepai_rpg_explore: "Traverse nearby RPG nodes by direction/depth.",
-};
-
-const SHARED_PROMPT_GUIDANCE =
-	"Runs the matching grepai CLI command in the current project and returns raw stdout/stderr. Prefer grepai_search for semantic discovery, trace_* for call flow, refs_* for data-flow/property usage, and index_status when results look stale or unavailable.";
-
-function promptFor(name: GrepaiToolName): string {
-	return `${TOOL_DESCRIPTIONS[name]}\n\n${SHARED_PROMPT_GUIDANCE}`;
+function appendFormat(args: string[], format?: GrepaiFormat): void {
+	if (format === "json") args.push("--json");
+	if (format === "toon") args.push("--toon");
 }
 
-export function createGrepaiTools(getConfig: () => GrepaiConfig): ToolDefinition<typeof Params, Record<string, unknown>>[] {
-	return GREPAI_TOOL_NAMES.map((name) => ({
-		name,
-		label: toolLabel(name),
-		description: TOOL_DESCRIPTIONS[name],
-		promptSnippet: promptFor(name),
-		parameters: Params,
+function appendBooleanFlag(args: string[], flag: string, enabled?: boolean): void {
+	if (enabled) args.push(flag);
+}
+
+function appendStringFlag(args: string[], flag: string, value?: string): void {
+	if (value !== undefined) args.push(flag, value);
+}
+
+function appendNumberFlag(args: string[], flag: string, value?: number): void {
+	if (value !== undefined) args.push(flag, String(value));
+}
+
+function appendWorkspaceFlags(args: string[], params: { workspace?: string; project?: string }): void {
+	appendStringFlag(args, "--workspace", params.workspace);
+	appendStringFlag(args, "--project", params.project);
+}
+
+function appendCompactFormatFlags(args: string[], params: { compact?: boolean; format?: GrepaiFormat }): void {
+	appendFormat(args, params.format);
+	appendBooleanFlag(args, "--compact", params.compact);
+}
+
+const TOOL_SPECS = [
+	{
+		name: "grepai_search",
+		description: "Semantic code search by intent.",
+		promptSnippet: "Use when relevant code is needed but exact symbols are unknown.",
+		parameters: SearchParamsSchema,
+		buildArgs: (params: SearchParams) => {
+			const args = ["search", params.query];
+			appendNumberFlag(args, "--limit", params.limit);
+			appendCompactFormatFlags(args, params);
+			return args;
+		},
+	},
+	{
+		name: "grepai_trace_callers",
+		description: "Find functions that call a symbol.",
+		promptSnippet: "Use for function or method callers once you know a symbol.",
+		parameters: TraceParamsSchema,
+		buildArgs: (params: TraceParams) => {
+			const args = ["trace", "callers", params.symbol];
+			appendWorkspaceFlags(args, params);
+			appendCompactFormatFlags(args, params);
+			return args;
+		},
+	},
+	{
+		name: "grepai_trace_callees",
+		description: "Find functions called by a symbol.",
+		promptSnippet: "Use for function or method callees once you know a symbol.",
+		parameters: TraceParamsSchema,
+		buildArgs: (params: TraceParams) => {
+			const args = ["trace", "callees", params.symbol];
+			appendWorkspaceFlags(args, params);
+			appendCompactFormatFlags(args, params);
+			return args;
+		},
+	},
+	{
+		name: "grepai_trace_graph",
+		description: "Build a call graph around a symbol.",
+		promptSnippet: "Use for recursive function or method call relationships.",
+		parameters: TraceGraphParamsSchema,
+		buildArgs: (params: TraceGraphParams) => {
+			const args = ["trace", "graph", params.symbol];
+			appendWorkspaceFlags(args, params);
+			appendNumberFlag(args, "--depth", params.depth);
+			appendFormat(args, params.format);
+			return args;
+		},
+	},
+	{
+		name: "grepai_refs_readers",
+		description: "Find property or state readers for a symbol.",
+		promptSnippet: "Use for property, field, or state reads rather than function calls.",
+		parameters: RefsParamsSchema,
+		buildArgs: (params: RefsParams) => {
+			const args = ["refs", "readers", params.symbol];
+			appendWorkspaceFlags(args, params);
+			appendFormat(args, params.format);
+			return args;
+		},
+	},
+	{
+		name: "grepai_refs_writers",
+		description: "Find property or state writers for a symbol.",
+		promptSnippet: "Use for property, field, or state writes rather than function calls.",
+		parameters: RefsParamsSchema,
+		buildArgs: (params: RefsParams) => {
+			const args = ["refs", "writers", params.symbol];
+			appendWorkspaceFlags(args, params);
+			appendFormat(args, params.format);
+			return args;
+		},
+	},
+	{
+		name: "grepai_refs_graph",
+		description: "Build a property or state usage graph.",
+		promptSnippet: "Use for combined read and write usage of a property or state key.",
+		parameters: RefsParamsSchema,
+		buildArgs: (params: RefsParams) => {
+			const args = ["refs", "graph", params.symbol];
+			appendWorkspaceFlags(args, params);
+			appendFormat(args, params.format);
+			return args;
+		},
+	},
+	{
+		name: "grepai_index_status",
+		description: "Check GrepAI index and watcher health.",
+		promptSnippet: "Use when search results look stale or indexing may be unavailable.",
+		parameters: StatusParamsSchema,
+		buildArgs: (params: StatusParams) => {
+			const args = ["status", "--no-ui"];
+			appendStringFlag(args, "--workspace", params.workspace);
+			appendBooleanFlag(args, "--verbose", params.verbose);
+			appendFormat(args, params.format);
+			return args;
+		},
+	},
+	{
+		name: "grepai_rpg_search",
+		description: "Search Repository Purpose Graph nodes.",
+		promptSnippet: "Use for GrepAI RPG semantic graph exploration when RPG is enabled.",
+		parameters: RpgSearchParamsSchema,
+		buildArgs: (params: RpgSearchParams) => {
+			const args = ["rpg", "search", params.query];
+			appendNumberFlag(args, "--limit", params.limit);
+			appendFormat(args, params.format);
+			return args;
+		},
+	},
+	{
+		name: "grepai_rpg_fetch",
+		description: "Fetch context for a GrepAI RPG node.",
+		promptSnippet: "Use to retrieve hierarchy and edge context for a known RPG node.",
+		parameters: RpgFetchParamsSchema,
+		buildArgs: (params: RpgFetchParams) => {
+			const args = ["rpg", "fetch", params.id];
+			appendFormat(args, params.format);
+			return args;
+		},
+	},
+	{
+		name: "grepai_rpg_explore",
+		description: "Traverse GrepAI RPG graph neighborhoods.",
+		promptSnippet: "Use to explore nearby RPG graph nodes by direction and depth.",
+		parameters: RpgExploreParamsSchema,
+		buildArgs: (params: RpgExploreParams) => {
+			const args = ["rpg", "explore", params.id];
+			appendStringFlag(args, "--direction", params.direction);
+			appendNumberFlag(args, "--depth", params.depth);
+			appendFormat(args, params.format);
+			return args;
+		},
+	},
+] as const satisfies readonly GrepaiToolSpec<any>[];
+
+const TOOL_SPEC_BY_NAME: ReadonlyMap<GrepaiToolName, GrepaiToolSpec<any>> = new Map(TOOL_SPECS.map((spec) => [spec.name, spec]));
+
+export function buildGrepaiArgs(name: GrepaiToolName, params: Record<string, unknown>): string[] {
+	const spec = TOOL_SPEC_BY_NAME.get(name);
+	if (!spec) throw new Error(`Unknown grepai tool: ${name}`);
+	return spec.buildArgs(params);
+}
+
+export function createGrepaiTools(getConfig: () => GrepaiConfig): ToolDefinition<TSchema, Record<string, unknown>>[] {
+	return TOOL_SPECS.map((spec) => ({
+		name: spec.name,
+		label: toolLabel(spec.name),
+		description: spec.description,
+		promptSnippet: spec.promptSnippet,
+		parameters: spec.parameters,
 		async execute(_toolCallId, params, signal, _onUpdate, ctx: ExtensionContext): Promise<AgentToolResult<Record<string, unknown>>> {
 			const projectRoot = await resolveProjectRoot(ctx.cwd);
-			const result = await runGrepai(buildGrepaiArgs(name, params as GrepaiToolParams), { cwd: projectRoot, timeoutMs: getConfig().grepai.commands.timeoutMs, signal });
+			const result = await runGrepai(buildGrepaiArgs(spec.name, params as Record<string, unknown>), {
+				cwd: projectRoot,
+				timeoutMs: getConfig().grepai.commands.timeoutMs,
+				signal,
+			});
 			return { content: [{ type: "text", text: formatCommandResult(result) }], details: { projectRoot, result } };
 		},
 	}));
