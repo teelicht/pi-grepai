@@ -1,29 +1,36 @@
 # LLM Tools
 
-The extension registers GrepAI LLM tools that call the installed `grepai` CLI from the detected project root. The tools mirror the documented GrepAI MCP/CLI surface, but this package does not run GrepAI through MCP and does not normalize GrepAI output.
+The extension registers GrepAI LLM tools that call the installed `grepai` CLI from the detected project root. The tools mirror the CLI-backed GrepAI tool surface, but this package does not run GrepAI through MCP and does not normalize GrepAI output.
 
 ## Tool List
 
 | Tool Name | Required Params | Optional Params | Description |
 |-----------|-----------------|-----------------|-------------|
 | `grepai_search` | `query` | `limit`, `compact`, `format` | Semantic code search by intent |
-| `grepai_trace_callers` | `symbol` | `workspace`, `project`, `compact`, `format` | Find functions that call a symbol |
-| `grepai_trace_callees` | `symbol` | `workspace`, `project`, `compact`, `format` | Find functions called by a symbol |
+| `grepai_trace_callers` | `symbol` | `workspace`, `project`, `format` | Find functions that call a symbol |
+| `grepai_trace_callees` | `symbol` | `workspace`, `project`, `format` | Find functions called by a symbol |
 | `grepai_trace_graph` | `symbol` | `workspace`, `project`, `depth`, `format` | Build a call graph around a symbol |
-| `grepai_refs_readers` | `symbol` | `workspace`, `project`, `format` | Find property or state readers for a symbol |
-| `grepai_refs_writers` | `symbol` | `workspace`, `project`, `format` | Find property or state writers for a symbol |
-| `grepai_refs_graph` | `symbol` | `workspace`, `project`, `format` | Build a property or state usage graph |
-| `grepai_index_status` | none | `verbose`, `workspace`, `format` | Check GrepAI index and watcher health |
-| `grepai_rpg_search` | `query` | `limit`, `format` | Search Repository Purpose Graph nodes |
-| `grepai_rpg_fetch` | `id` | `format` | Fetch context for a GrepAI RPG node |
-| `grepai_rpg_explore` | `id` | `direction`, `depth`, `format` | Traverse GrepAI RPG graph neighborhoods |
+| `grepai_index_status` | none | none | Check GrepAI index and watcher health |
+
+## Temporarily Disabled Tools
+
+The following documented GrepAI MCP tools are temporarily disabled in this package because `grepai` v0.35.0 does not expose matching CLI commands:
+
+- `grepai_refs_readers`
+- `grepai_refs_writers`
+- `grepai_refs_graph`
+- `grepai_rpg_search`
+- `grepai_rpg_fetch`
+- `grepai_rpg_explore`
+
+They remain commented in the source so they can be restored if GrepAI exposes them through the CLI later.
 
 ## Parameter Notes
 
 - `format` accepts `json`, `toon`, or `text`. `json` maps to `--json`, `toon` maps to `--toon`, and `text` adds no output-format flag.
-- `compact: true` maps to `--compact` on tools whose GrepAI command supports compact output.
-- `limit` and `depth` map to `--limit` and `--depth`.
-- `workspace` and `project` pass through to the matching GrepAI CLI flags. If the installed GrepAI version does not support a flag or command, the CLI error is returned directly.
+- `compact: true` maps to `--compact` on `grepai_search`, which is the CLI command that currently supports compact output.
+- `limit` maps to `--limit` on search, and `depth` maps to `--depth` on trace graph.
+- `workspace` and `project` pass through to trace commands. If the installed GrepAI version does not support a flag, the CLI error is returned directly.
 
 ## Agent Guidance
 
@@ -31,9 +38,7 @@ Tool metadata is intentionally short. Long-form search strategy, trace strategy,
 
 - Use `grepai_search` for semantic discovery when exact symbols are unknown.
 - Use `grepai_trace_*` for function or method call relationships.
-- Use `grepai_refs_*` for property, field, or state read/write usage.
 - Use `grepai_index_status` when results look stale or indexing may be unavailable.
-- Use `grepai_rpg_*` only when GrepAI RPG is enabled for the project or workspace.
 
 ## Output Handling
 
@@ -41,7 +46,7 @@ Tool metadata is intentionally short. Long-form search strategy, trace strategy,
 
 ## Version Compatibility
 
-This package mirrors the documented GrepAI MCP/CLI tool surface while executing the local installed `grepai` binary. Available commands and flags can depend on the installed GrepAI version. `pi-grepai` intentionally lets unsupported local commands or flags surface as GrepAI CLI output instead of hiding them with compatibility shims.
+This package currently exposes only tools backed by `grepai` v0.35.0 CLI commands. MCP-only tools are disabled until GrepAI exposes equivalent CLI commands or this package adds explicit MCP support.
 
 ## Activation
 

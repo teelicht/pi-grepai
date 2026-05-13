@@ -48,25 +48,7 @@ void describe("createGrepaiTools", () => {
 			["grepai_trace_callers", { description: "Find functions that call a symbol.", promptSnippet: "Use for function or method callers once you know a symbol." }],
 			["grepai_trace_callees", { description: "Find functions called by a symbol.", promptSnippet: "Use for function or method callees once you know a symbol." }],
 			["grepai_trace_graph", { description: "Build a call graph around a symbol.", promptSnippet: "Use for recursive function or method call relationships." }],
-			[
-				"grepai_refs_readers",
-				{
-					description: "Find property or state readers for a symbol.",
-					promptSnippet: "Use for property, field, or state reads rather than function calls.",
-				},
-			],
-			[
-				"grepai_refs_writers",
-				{
-					description: "Find property or state writers for a symbol.",
-					promptSnippet: "Use for property, field, or state writes rather than function calls.",
-				},
-			],
-			["grepai_refs_graph", { description: "Build a property or state usage graph.", promptSnippet: "Use for combined read and write usage of a property or state key." }],
 			["grepai_index_status", { description: "Check GrepAI index and watcher health.", promptSnippet: "Use when search results look stale or indexing may be unavailable." }],
-			["grepai_rpg_search", { description: "Search Repository Purpose Graph nodes.", promptSnippet: "Use for GrepAI RPG semantic graph exploration when RPG is enabled." }],
-			["grepai_rpg_fetch", { description: "Fetch context for a GrepAI RPG node.", promptSnippet: "Use to retrieve hierarchy and edge context for a known RPG node." }],
-			["grepai_rpg_explore", { description: "Traverse GrepAI RPG graph neighborhoods.", promptSnippet: "Use to explore nearby RPG graph nodes by direction and depth." }],
 		]);
 
 		for (const tool of createGrepaiTools(config)) {
@@ -81,7 +63,7 @@ void describe("createGrepaiTools", () => {
 
 	it("uses per-tool schemas instead of one shared all-optional object", () => {
 		const signatures = createGrepaiTools(config).map((tool) => JSON.stringify(tool.parameters));
-		assert.ok(new Set(signatures).size > 4, "expected multiple distinct schemas");
+		assert.ok(new Set(signatures).size >= 4, "expected multiple distinct schemas");
 	});
 
 	it("marks primary arguments as required", () => {
@@ -90,12 +72,6 @@ void describe("createGrepaiTools", () => {
 			["grepai_trace_callers", ["symbol"]],
 			["grepai_trace_callees", ["symbol"]],
 			["grepai_trace_graph", ["symbol"]],
-			["grepai_refs_readers", ["symbol"]],
-			["grepai_refs_writers", ["symbol"]],
-			["grepai_refs_graph", ["symbol"]],
-			["grepai_rpg_search", ["query"]],
-			["grepai_rpg_fetch", ["id"]],
-			["grepai_rpg_explore", ["id"]],
 		]);
 
 		for (const [name, required] of requiredByTool) {
@@ -106,10 +82,8 @@ void describe("createGrepaiTools", () => {
 
 	it("exposes documented optional parameter properties", () => {
 		assert.deepEqual(Object.keys(schemaFor("grepai_search").properties ?? {}).sort(), ["compact", "format", "limit", "query"]);
-		assert.deepEqual(Object.keys(schemaFor("grepai_trace_callers").properties ?? {}).sort(), ["compact", "format", "project", "symbol", "workspace"]);
+		assert.deepEqual(Object.keys(schemaFor("grepai_trace_callers").properties ?? {}).sort(), ["format", "project", "symbol", "workspace"]);
 		assert.deepEqual(Object.keys(schemaFor("grepai_trace_graph").properties ?? {}).sort(), ["depth", "format", "project", "symbol", "workspace"]);
-		assert.deepEqual(Object.keys(schemaFor("grepai_refs_graph").properties ?? {}).sort(), ["format", "project", "symbol", "workspace"]);
-		assert.deepEqual(Object.keys(schemaFor("grepai_index_status").properties ?? {}).sort(), ["format", "verbose", "workspace"]);
-		assert.deepEqual(Object.keys(schemaFor("grepai_rpg_explore").properties ?? {}).sort(), ["depth", "direction", "format", "id"]);
+		assert.deepEqual(Object.keys(schemaFor("grepai_index_status").properties ?? {}).sort(), []);
 	});
 });

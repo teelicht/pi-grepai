@@ -10,13 +10,9 @@ This package does not install grepai, does not install official grepai skills an
 - `grepai_trace_callers` LLM tool
 - `grepai_trace_callees` LLM tool
 - `grepai_trace_graph` LLM tool
-- `grepai_refs_readers` LLM tool
-- `grepai_refs_writers` LLM tool
-- `grepai_refs_graph` LLM tool
 - `grepai_index_status` LLM tool
-- `grepai_rpg_search` LLM tool
-- `grepai_rpg_fetch` LLM tool
-- `grepai_rpg_explore` LLM tool
+
+The documented `grepai_refs_*` and `grepai_rpg_*` MCP tools are temporarily disabled because `grepai` v0.35.0 does not expose matching CLI commands.
 
 ## Install
 

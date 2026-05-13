@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.1 - 2026-05-13
+
+- Temporarily disables `grepai_refs_*` and `grepai_rpg_*` tools because GrepAI v0.35.0 does not expose matching CLI commands.
+- Keeps disabled refs/RPG implementations commented in source for easy restoration if GrepAI adds CLI support.
+- Aligns active tool schemas and docs with the working GrepAI v0.35.0 CLI surface.
+
 ## v0.1.0 - 2026-05-11
 
 - Update Pi dependencies to @earendil-works/* v0.74.0
